@@ -51,9 +51,11 @@ extern "C" {
  *   [8-17]  layer_name       : up to 10 ASCII chars, null-padded
  *   [18]    modifiers        : HID modifier byte (see ZMK_BLE_ADV_MOD_* below)
  *   [19]    wpm              : 0-255
- *   [20]    key_row          : matrix row of the last pressed key (0-based);
+ *   [20]    key_row          : matrix row of the last pressed key (0-based),
+ *                              derived as position / ZMK_MATRIX_COLS;
  *                              0xFF when no key has been pressed since boot
- *   [21]    key_col          : matrix column of the last pressed key (0-based);
+ *   [21]    key_col          : matrix column of the last pressed key (0-based),
+ *                              derived as position % ZMK_MATRIX_COLS;
  *                              0xFF when no key has been pressed since boot
  */
 

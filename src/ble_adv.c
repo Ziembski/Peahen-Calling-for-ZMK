@@ -59,8 +59,6 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 
 #else  /* central or standalone */
 
-#include <zmk/matrix_transform.h>
-
 /* -------------------------------------------------------------------------
  * Static assertions
  * ------------------------------------------------------------------------- */
@@ -394,16 +392,14 @@ static int on_position_state_changed(const zmk_event_t *eh) {
         in_idle          = false;
         wpm_on_keypress(now_ms);
 
-        /* Translate the flat key position to a matrix row and column so the
-         * receiver can highlight the correct key on a keyboard layout display.
-         * zmk_matrix_transform_position_to_row_col() returns 0 on success and
-         * writes into the two output pointers; on failure (position out of
-         * range) the sentinel value 0xFF is preserved.                       */
-        uint8_t row, col;
-        if (zmk_matrix_transform_position_to_row_col(ev->position, &row, &col) == 0) {
-            last_key_row = row;
-            last_key_col = col;
-        }
+        /* Decode the flat position into a matrix row and column.
+         * ZMK's matrix transform encodes each entry as
+         *   position = row * ZMK_MATRIX_COLS + col
+         * so the inverse is simple integer arithmetic.
+         * ZMK_MATRIX_COLS is a compile-time constant derived from the
+         * keyboard's devicetree matrix transform (always > 0).            */
+        last_key_row = (uint8_t)(ev->position / ZMK_MATRIX_COLS);
+        last_key_col = (uint8_t)(ev->position % ZMK_MATRIX_COLS);
 
         request_event_update();
     }
