@@ -11,12 +11,12 @@ extern "C" {
 #endif
 
 /*
- * BLE manufacturer data payload (21 bytes total inside the AD structure).
+ * BLE manufacturer data payload (22 bytes total inside the AD structure).
  *
  * AD packet budget (31 bytes):
  *   Flags AD        : 3 bytes  [0x02 0x01 0x06]
- *   Manufacturer AD : 1(len) + 1(type=0xFF) + 20(payload struct) = 22 bytes
- *   Total           : 25 bytes  (6 bytes spare)
+ *   Manufacturer AD : 1(len) + 1(type=0xFF) + 22(payload struct) = 24 bytes
+ *   Total           : 27 bytes  (4 bytes spare)
  *
  * company_id[2] are the first two bytes of the payload struct; the BT stack
  * treats the first two bytes of manufacturer data as the company ID.
@@ -51,6 +51,10 @@ extern "C" {
  *   [8-17]  layer_name       : up to 10 ASCII chars, null-padded
  *   [18]    modifiers        : HID modifier byte (see ZMK_BLE_ADV_MOD_* below)
  *   [19]    wpm              : 0-255
+ *   [20]    key_row          : matrix row of the last pressed key (0-based);
+ *                              0xFF when no key has been pressed since boot
+ *   [21]    key_col          : matrix column of the last pressed key (0-based);
+ *                              0xFF when no key has been pressed since boot
  */
 
 /* Filter constants — match these 4 bytes at offset 0 of AD type 0xFF data
@@ -70,6 +74,8 @@ struct zmk_ble_adv_payload {
     char    layer_name[10];
     uint8_t modifiers;
     uint8_t wpm;
+    uint8_t key_row;   /* matrix row of last pressed key; 0xFF before first press */
+    uint8_t key_col;   /* matrix column of last pressed key; 0xFF before first press */
 } __packed;
 
 /* status_flags bit definitions */

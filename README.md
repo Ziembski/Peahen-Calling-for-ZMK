@@ -109,8 +109,8 @@ These constants are also exported from the header for C/C++ receivers:
 
 ## Payload format
 
-The advertisement carries a **20-byte manufacturer data** block (3-byte Flags AD +
-23-byte Manufacturer AD = **26 bytes**, within the 31-byte legacy limit).
+The advertisement carries a **22-byte manufacturer data** block (3-byte Flags AD +
+25-byte Manufacturer AD = **28 bytes**, within the 31-byte legacy limit).
 The keyboard name appears in the **scan response**.
 
 | Offset | Size | Field | Description |
@@ -124,6 +124,8 @@ The keyboard name appears in the **scan response**.
 | 8–17 | 10 | `layer_name` | Active layer name, ASCII, null-padded, max 10 chars |
 | 18 | 1 | `modifiers` | HID modifier byte — see table below |
 | 19 | 1 | `wpm` | Words per minute, 0–255 |
+| 20 | 1 | `key_row` | Matrix row of the last pressed key (0-based); `0xFF` before the first keypress since boot |
+| 21 | 1 | `key_col` | Matrix column of the last pressed key (0-based); `0xFF` before the first keypress since boot |
 
 ### `bt_profile_layer` encoding
 
