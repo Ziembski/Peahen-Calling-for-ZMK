@@ -62,8 +62,8 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 /* -------------------------------------------------------------------------
  * Static assertions
  * ------------------------------------------------------------------------- */
-BUILD_ASSERT(sizeof(struct zmk_ble_adv_payload) == 22,
-             "zmk_ble_adv_payload must be exactly 22 bytes");
+BUILD_ASSERT(sizeof(struct zmk_ble_adv_payload) == 21,
+             "zmk_ble_adv_payload must be exactly 21 bytes");
 
 /* -------------------------------------------------------------------------
  * WPM state
@@ -142,8 +142,7 @@ static uint32_t last_keypress_ms;
 static uint32_t last_adv_ms;
 
 /* 0xFF = sentinel meaning "no key pressed since boot". */
-static uint8_t last_key_row = 0xFFU;
-static uint8_t last_key_col = 0xFFU;
+static uint8_t last_key_position = 0xFFU;
 
 #if IS_ENABLED(CONFIG_ZMK_SPLIT_BLE) && IS_ENABLED(CONFIG_ZMK_SPLIT_ROLE_CENTRAL)
 static uint8_t peripheral_battery;
@@ -274,8 +273,7 @@ static void build_payload(void) {
     wpm_update(now_ms);
     payload.wpm = wpm_value;
 
-    payload.key_row = last_key_row;
-    payload.key_col = last_key_col;
+    payload.key_position = last_key_position;
 }
 
 /* -------------------------------------------------------------------------
@@ -392,14 +390,11 @@ static int on_position_state_changed(const zmk_event_t *eh) {
         in_idle          = false;
         wpm_on_keypress(now_ms);
 
-        /* Decode the flat position into a matrix row and column.
-         * ZMK's matrix transform encodes each entry as
-         *   position = row * ZMK_MATRIX_COLS + col
-         * so the inverse is simple integer arithmetic.
-         * ZMK_MATRIX_COLS is a compile-time constant derived from the
-         * keyboard's devicetree matrix transform (always > 0).            */
-        last_key_row = (uint8_t)(ev->position / ZMK_MATRIX_COLS);
-        last_key_col = (uint8_t)(ev->position % ZMK_MATRIX_COLS);
+        /* Store the ZMK key position directly. The receiver maps it to
+         * row/col using its own keyboard layout table. Position fits in
+         * a uint16_t; ZMK uses uint32_t internally but keyboards never
+         * exceed a few hundred keys in practice.                         */
+        last_key_position = (uint8_t)ev->position;
 
         request_event_update();
     }
